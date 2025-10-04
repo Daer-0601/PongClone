@@ -20,7 +20,7 @@ public class MainMenu : MonoBehaviour
     public void StartGame()
     {
         // Cargar la escena del juego
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene("ModeGame");
     }
     
     // Funcion para salir del juego

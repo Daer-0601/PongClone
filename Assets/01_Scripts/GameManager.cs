@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour
     public Text winnerText;
 
     public BallMovement ball;
+    public GameObject paddleLeft;
+    public GameObject paddleRight;
+
     // Sonido cuando alguien anota
     public AudioClip scoreSound;
     private int highScore = 0;
@@ -25,14 +28,35 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // Detectar el modo de juego guardado
+        int mode = PlayerPrefs.GetInt("GameMode", 2); // por defecto 2 jugadores
+
+        if (mode == 1)
+        {
+            // Activar IA en el paddle derecho
+            if (paddleRight.GetComponent<PaddleMovement>() != null)
+                paddleRight.GetComponent<PaddleMovement>().enabled = false;
+
+            PaddleAI ai = paddleRight.GetComponent<PaddleAI>();
+            if (ai == null) ai = paddleRight.AddComponent<PaddleAI>();
+            ai.ball = ball.transform;
+        }
+        else
+        {
+            // Ambos jugadores humanos
+            if (paddleRight.GetComponent<PaddleAI>() != null)
+                Destroy(paddleRight.GetComponent<PaddleAI>());
+
+            if (paddleRight.GetComponent<PaddleMovement>() != null)
+                paddleRight.GetComponent<PaddleMovement>().enabled = true;
+        }
+
         // Cargar la puntuacion mas alta guardada
         highScore = PlayerPrefs.GetInt("HighScore", 0);
-        // Asegurarse de que el panel de Game Over este desactivado al inicio
+
         if (gameOverPanel != null)
-        {
             gameOverPanel.SetActive(false);
-        }
-        // Actualizar los textos al inicio
+
         UpdateScoreUI();
         UpdateHighScoreUI();
     }
@@ -40,70 +64,53 @@ public class GameManager : MonoBehaviour
     // Funcion para añadir puntos al jugador izquierdo
     public void PlayerLeftScores()
     {
-        if (gameEnded) return; // No hacer nada si el juego ya termino
+        if (gameEnded) return;
 
         playerLeftScore++;
-        // Reproducir sonido de puntuacion
         PlayScoreSound();
 
         UpdateScoreUI();
         CheckHighScore();
         CheckWinCondition();
 
-        if (!gameEnded)
-        {
-            ball.ResetBall();
-        }
+        if (!gameEnded) ball.ResetBall();
     }
 
     // Funcion para añadir puntos al jugador derecho
     public void PlayerRightScores()
     {
-        if (gameEnded) return; // No hacer nada si el juego ya termino
+        if (gameEnded) return;
 
         playerRightScore++;
-        // Reproducir sonido de puntuacion
         PlayScoreSound();
 
         UpdateScoreUI();
         CheckHighScore();
         CheckWinCondition();
 
-        if (!gameEnded)
-        {
-            ball.ResetBall();
-        }
+        if (!gameEnded) ball.ResetBall();
     }
 
-    // Funcion para reproducir el sonido de puntuacion
     void PlayScoreSound()
     {
         if (scoreSound != null)
-        {
             GetComponent<AudioSource>().PlayOneShot(scoreSound);
-        }
     }
 
-    // Actualizar los textos de puntuacion
     void UpdateScoreUI()
     {
         leftScoreText.text = playerLeftScore.ToString();
         rightScoreText.text = playerRightScore.ToString();
     }
 
-    // Actualizar el texto del high score
     void UpdateHighScoreUI()
     {
         if (highScoreText != null)
-        {
             highScoreText.text = "High Score: " + highScore.ToString();
-        }
     }
 
-    // Verificar y guardar el high score
     void CheckHighScore()
     {
-        // Verificar si algun jugador supero el high score
         int currentMaxScore = Mathf.Max(playerLeftScore, playerRightScore);
 
         if (currentMaxScore > highScore)
@@ -115,7 +122,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Verificar si alguien gano
     void CheckWinCondition()
     {
         if (playerLeftScore >= scoreToWin)
@@ -128,41 +134,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Mostrar pantalla de Game Over
     void GameOver(string winner)
     {
         gameEnded = true;
 
-        // Reproducir sonido de puntuacion
         if (scoreSound != null)
-        {
             GetComponent<AudioSource>().PlayOneShot(scoreSound);
-        }
 
-        // Detener la pelota
         ball.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
 
-        // Mostrar el panel de Game Over
         if (gameOverPanel != null)
-        {
             gameOverPanel.SetActive(true);
-        }
 
-        // Mostrar quien gano
         if (winnerText != null)
-        {
             winnerText.text = winner;
-        }
     }
 
-    // Funcion para reiniciar el juego
     public void RestartGame()
     {
-        // Recargar la escena actual
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // Funcion para volver al menu principal
     public void BackToMenu()
     {
         SceneManager.LoadScene("MainMenu");
