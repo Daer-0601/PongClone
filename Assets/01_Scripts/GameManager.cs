@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    // nuevas VARIABLES:
+    [Header("Power-Up Settings")]
+    public int powerUpActivationThreshold = 3;// Cada 3 puntos se activa power-up
     // Puntuaciones de cada jugador
     public int playerLeftScore = 0;
     public int playerRightScore = 0;
@@ -59,11 +62,38 @@ public class GameManager : MonoBehaviour
 
         UpdateScoreUI();
         UpdateHighScoreUI();
+         // Asegurarse de que existe el PowerUpManager, agrgado
+        if (FindObjectOfType<PowerUpManager>() == null)
+        {
+            GameObject powerUpManager = new GameObject("PowerUpManager");
+            powerUpManager.AddComponent<PowerUpManager>();
+        }
     }
 
-    // Funcion para a馻dir puntos al jugador izquierdo
+    // Funcion para a锟絘dir puntos al jugador izquierdo
     public void PlayerLeftScores()
     {
+       int pointsToAdd = 1;
+        
+        // Verificar si puntos dobles est谩n activos
+        if (PowerUpManager.Instance != null && PowerUpManager.Instance.IsDoublePointsActive())
+        {
+            pointsToAdd = 2;
+            Debug.Log("隆Puntos dobles! +2 puntos");
+        }
+        
+        // ... tu c贸digo existente para sumar puntos ...
+        // leftPlayerScore += pointsToAdd;
+        
+        // Verificar si activar power-up (cada 3 puntos)
+       
+        if (playerLeftScore % powerUpActivationThreshold == 0)
+        {
+            if (PowerUpManager.Instance != null)
+            {
+                PowerUpManager.Instance.ActivatePowerUp(true); // true = jugador izquierdo anot贸
+            }
+        }
         if (gameEnded) return;
 
         playerLeftScore++;
@@ -76,9 +106,30 @@ public class GameManager : MonoBehaviour
         if (!gameEnded) ball.ResetBall();
     }
 
-    // Funcion para a馻dir puntos al jugador derecho
+    // Funcion para a锟絘dir puntos al jugador derecho
     public void PlayerRightScores()
     {
+        int pointsToAdd = 1;
+        
+        // Verificar si puntos dobles est谩n activos
+        if (PowerUpManager.Instance != null && PowerUpManager.Instance.IsDoublePointsActive())
+        {
+            pointsToAdd = 2;
+            Debug.Log("隆Puntos dobles! +2 puntos");
+        }
+        
+        // ... tu c贸digo existente para sumar puntos ...
+        // rightPlayerScore += pointsToAdd;
+        
+        // Verificar si activar power-up (cada 3 puntos)
+        // NOTA: Reemplaza "rightPlayerScore" con el nombre de tu variable real
+        if (playerRightScore % powerUpActivationThreshold == 0)
+        {
+            if (PowerUpManager.Instance != null)
+            {
+                PowerUpManager.Instance.ActivatePowerUp(false); // false = jugador derecho anot贸
+            }
+        }
         if (gameEnded) return;
 
         playerRightScore++;
